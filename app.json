@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "Marrakech Bites",
+    "owner": "ushagour",
+    "slug": "Marrakech-bites",
+    "description": "A fast-food app for discovering and ordering Moroccan-inspired street food.",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/Logo-splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#245642"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.ushagour.marrakechbites"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/MarkaziText-Regular.ttf",
+            "./assets/fonts/Karla-Regular.ttf",
+            "./assets/fonts/MarkaziText-Medium.ttf",
+            "./assets/fonts/Karla-Bold.ttf"
+          ]
+        }
+      ],
+      "expo-sqlite"
+    ],
+    "jsEngine": "hermes",
+    "extra": {
+      "eas": {
+        "projectId": "06c0c88d-b58e-4b7f-b14a-09692246115d"
+      }
+    }
+  }
+}

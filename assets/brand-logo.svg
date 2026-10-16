@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 260">
+  <g transform="translate(8 8)">
+    <path d="M28 244V122C28 53 73 8 142 8s114 45 114 114v122H28Z" fill="#C84C35"/>
+    <path d="M60 244V124c0-50 31-84 82-84s82 34 82 84v120H60Z" fill="#FFF8EA"/>
+    <path d="M83 145c0-28 26-48 59-48s59 20 59 48v9H83v-9Z" fill="#D89A3A"/>
+    <path d="m80 159 15-8 15 8 15-8 15 8 15-8 15 8 15-8 15 8 15-8 10 6v11H80v-9Z" fill="#34725A"/>
+    <path d="M83 174h118v20H83z" fill="#754332"/>
+    <path d="M78 197h128c-4 19-17 30-38 30h-52c-21 0-34-11-38-30Z" fill="#D89A3A"/>
+    <path d="m142 54 7 15 16 1-12 10 4 16-15-9-14 9 3-16-12-10 16-1 7-15Z" fill="#D89A3A"/>
+    <ellipse cx="122" cy="124" rx="4" ry="2.5" fill="#FFF8EA" transform="rotate(-25 122 124)"/>
+    <ellipse cx="145" cy="117" rx="4" ry="2.5" fill="#FFF8EA" transform="rotate(18 145 117)"/>
+    <ellipse cx="166" cy="124" rx="4" ry="2.5" fill="#FFF8EA" transform="rotate(-16 166 124)"/>
+  </g>
+  <text x="294" y="126" fill="#245642" font-family="Georgia,serif" font-size="65" font-weight="700" letter-spacing="1">MARRAKECH</text>
+  <text x="299" y="187" fill="#C84C35" font-family="Georgia,serif" font-size="48" font-weight="700" letter-spacing="8">BITES</text>
+  <path d="M300 207h114" stroke="#D89A3A" stroke-width="4"/>
+  <text x="428" y="217" fill="#245642" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2">MOROCCAN-INSPIRED STREET FOOD</text>
+</svg>
