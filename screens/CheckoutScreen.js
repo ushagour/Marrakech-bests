@@ -31,7 +31,7 @@ const CheckoutScreen = ({ navigation }) => {
   const { addOrder } = useOrders();
   const { isGuest } = useAuth();
   const { showToast } = useFeedback();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -213,7 +213,11 @@ const CheckoutScreen = ({ navigation }) => {
             value={deliveryAddress}
             onChangeText={setDeliveryAddress}
             editable={!isProcessing}
-            inputStyle={{ marginBottom: 12 }}
+            inputStyle={{
+              marginBottom: 12,
+              textAlign: isRTL ? 'right' : 'left',
+              writingDirection: isRTL ? 'rtl' : 'ltr',
+            }}
           />
 
           <AppTextInput
@@ -222,7 +226,11 @@ const CheckoutScreen = ({ navigation }) => {
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
             editable={!isProcessing}
-            inputStyle={{ marginBottom: 12 }}
+            inputStyle={{
+              marginBottom: 12,
+              textAlign: isRTL ? 'right' : 'left',
+              writingDirection: 'ltr',
+            }}
           />
 
           <AppTextInput
@@ -232,6 +240,10 @@ const CheckoutScreen = ({ navigation }) => {
             multiline
             numberOfLines={3}
             editable={!isProcessing}
+            inputStyle={{
+              textAlign: isRTL ? 'right' : 'left',
+              writingDirection: isRTL ? 'rtl' : 'ltr',
+            }}
           />
         </View>
 

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, View, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import ScreenHeader from '../components/ui/ScreenHeader';
 import OrderStepper from '../components/ui/OrderStepper';
@@ -14,6 +15,28 @@ import { getImageUrl } from '../api/getImageUrl';
 import { hapticLight, hapticSuccess } from '../utils/haptics';
 import { colors, layout, radii, shadows, spacing, typography } from '../config/theme';
 import { useLanguage } from '../context/LanguageContext';
+
+const DELIVERY_ROUTE = [
+  { latitude: 31.6295, longitude: -7.9891 },
+  { latitude: 31.6302, longitude: -7.9907 },
+  { latitude: 31.6313, longitude: -7.9920 },
+  { latitude: 31.6322, longitude: -7.9938 },
+  { latitude: 31.6336, longitude: -7.9952 },
+  { latitude: 31.6350, longitude: -7.9970 },
+];
+
+const getRoutePosition = (progress) => {
+  const scaledProgress = Math.min(Math.max(progress, 0), 1) * (DELIVERY_ROUTE.length - 1);
+  const segmentIndex = Math.min(Math.floor(scaledProgress), DELIVERY_ROUTE.length - 2);
+  const segmentProgress = scaledProgress - segmentIndex;
+  const start = DELIVERY_ROUTE[segmentIndex];
+  const end = DELIVERY_ROUTE[segmentIndex + 1];
+
+  return {
+    latitude: start.latitude + (end.latitude - start.latitude) * segmentProgress,
+    longitude: start.longitude + (end.longitude - start.longitude) * segmentProgress,
+  };
+};
 
 const Section = ({ title, delay = 0, children }) => (
   <Animated.View entering={FadeInDown.delay(delay).duration(300)} style={styles.section}>
@@ -39,8 +62,25 @@ const OrderDetailScreen = ({ navigation, route }) => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [courierCoordinate, setCourierCoordinate] = useState(DELIVERY_ROUTE[0]);
 
   const order = orders.find((o) => o.id === orderId);
+
+  useEffect(() => {
+    if (!order || order.status !== 'ready') {
+      setCourierCoordinate(DELIVERY_ROUTE[0]);
+      return undefined;
+    }
+
+    const updateCourierPosition = () => {
+      const ageSeconds = (Date.now() - new Date(order.date).getTime()) / 1000;
+      setCourierCoordinate(getRoutePosition((ageSeconds - 90) / 90));
+    };
+
+    updateCourierPosition();
+    const interval = setInterval(updateCourierPosition, 2000);
+    return () => clearInterval(interval);
+  }, [order?.date, order?.status]);
 
   useEffect(() => {
     if (order && !order.read) markOrderAsRead(order.id);
@@ -103,6 +143,57 @@ const OrderDetailScreen = ({ navigation, route }) => {
             {t('Placed {date} at {time}', { date: date.toLocaleDateString(locale), time: date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }) })}
           </Text>
         </Section>
+
+        {order.status === 'ready' ? (
+          <Section title={t('Courier tracking')} delay={30}>
+            {Platform.OS === 'web' ? (
+              <View style={styles.mapUnavailable}>
+                <Ionicons name="map-outline" size={24} color={colors.brand} />
+                <Text style={styles.mapUnavailableText}>{t('3D map is available in the mobile app')}</Text>
+              </View>
+            ) : (
+              <View style={styles.mapContainer}>
+                <MapView
+                  style={StyleSheet.absoluteFill}
+                  mapType="standard"
+                  initialCamera={{
+                    center: { latitude: 31.6323, longitude: -7.9930 },
+                    pitch: 58,
+                    heading: 28,
+                    altitude: 700,
+                    zoom: 16,
+                  }}
+                  showsBuildings
+                  showsCompass={false}
+                  showsPointsOfInterest={false}
+                  rotateEnabled={false}
+                  toolbarEnabled={false}
+                >
+                  <Polyline coordinates={DELIVERY_ROUTE} strokeColor={colors.brand} strokeWidth={5} />
+                  <Marker coordinate={DELIVERY_ROUTE[0]} title={t('Restaurant')}>
+                    <View style={styles.restaurantMarker}>
+                      <Ionicons name="restaurant" size={16} color={colors.textOnBrand} />
+                    </View>
+                  </Marker>
+                  <Marker coordinate={DELIVERY_ROUTE[DELIVERY_ROUTE.length - 1]} title={t('Demo destination')}>
+                    <View style={styles.destinationMarker}>
+                      <Ionicons name="location" size={22} color={colors.danger} />
+                    </View>
+                  </Marker>
+                  <Marker coordinate={courierCoordinate} title={t('Courier')}>
+                    <View style={styles.courierMarker}>
+                      <MaterialIcons name="delivery-dining" size={22} color={colors.textOnBrand} />
+                    </View>
+                  </Marker>
+                </MapView>
+                <View pointerEvents="none" style={styles.mapNotice}>
+                  <View style={styles.liveDot} />
+                  <Text style={styles.mapNoticeText}>{t('Demo tracking · location is simulated')}</Text>
+                </View>
+              </View>
+            )}
+          </Section>
+        ) : null}
 
         <Section title={t('Items')} delay={60}>
           {order.items.map((item, i) => (
@@ -219,6 +310,54 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { ...typography.h2, color: colors.text, marginBottom: spacing.md },
   meta: { ...typography.small, color: colors.textMuted, marginTop: spacing.md },
+  mapContainer: { height: 260, borderRadius: radii.md, overflow: 'hidden', backgroundColor: colors.surfaceMuted },
+  mapNotice: {
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm,
+    right: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+  },
+  liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.accent },
+  mapNoticeText: { ...typography.caption, color: colors.text },
+  restaurantMarker: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.brand,
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  courierMarker: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.info,
+    borderWidth: 3,
+    borderColor: colors.surface,
+  },
+  destinationMarker: { alignItems: 'center', justifyContent: 'center' },
+  mapUnavailable: {
+    minHeight: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceMuted,
+  },
+  mapUnavailableText: { ...typography.small, color: colors.textMuted, textAlign: 'center' },
   item: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
   itemImage: { width: 56, height: 56, borderRadius: radii.sm, backgroundColor: colors.border },
   itemName: { ...typography.bodyStrong, color: colors.text },
