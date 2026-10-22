@@ -2,7 +2,7 @@
   "expo": {
     "name": "Marrakech Bites",
     "owner": "ushagour",
-    "slug": "Marrakech-bites",
+    "slug": "Marrakech-bests",
     "description": "A fast-food app for discovering and ordering Moroccan-inspired street food.",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -39,12 +39,13 @@
           ]
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-image"
     ],
     "jsEngine": "hermes",
     "extra": {
       "eas": {
-        "projectId": "06c0c88d-b58e-4b7f-b14a-09692246115d"
+        "projectId": "d4310f1e-9998-4d09-a00e-832e63b31c26"
       }
     }
   }
