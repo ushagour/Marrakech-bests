@@ -5,7 +5,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const PROFILE_KEY = '@littlelemon_profile';
+  const ONBOARDING_KEY = '@marrakech_bests_onboarding_complete';
   const [user, setUser] = useState(null);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load user profile from AsyncStorage on mount
@@ -19,13 +21,16 @@ export const AuthProvider = ({ children }) => {
 
      const loadUser = async () => {
       try {
-        const json = await AsyncStorage.getItem(PROFILE_KEY);
+        const [json, onboardingComplete] = await Promise.all([
+          AsyncStorage.getItem(PROFILE_KEY),
+          AsyncStorage.getItem(ONBOARDING_KEY),
+        ]);
 
-        
         if (json) {
           const data = JSON.parse(json);
           setUser(data);
         }
+        setHasSeenOnboarding(onboardingComplete === 'true');
       } catch (e) {
         // Error loading user from storage
       } finally {
@@ -61,7 +66,9 @@ export const AuthProvider = ({ children }) => {
         isGuest: false, // Mark as registered user, not guest
       };
       await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(nextUser));
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
       setUser(nextUser);
+      setHasSeenOnboarding(true);
       return true;
     } catch (e) {
       // Error completing onboarding
@@ -76,6 +83,16 @@ export const AuthProvider = ({ children }) => {
       isUserOnboarded: false,
     };
     setUser(guestUser);
+  };
+
+  const markOnboardingComplete = async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      setHasSeenOnboarding(true);
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   // Clear user (logout)
@@ -94,8 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userData) => {
     try {
-      await completeOnboarding(userData);
-      return true;
+      return await completeOnboarding(userData);
     } catch (e) {
       // Error saving user to storage
       return false;
@@ -105,8 +121,7 @@ export const AuthProvider = ({ children }) => {
   const SignUp = async (userData) => {  
 
     try {
-      await completeOnboarding(userData);
-      return true;
+      return await completeOnboarding(userData);
     }
     catch (e) {
       // Error saving user to storage
@@ -122,6 +137,8 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     isLoading,
+    hasSeenOnboarding,
+    markOnboardingComplete,
     login,
     SignUp,
     updateUser,

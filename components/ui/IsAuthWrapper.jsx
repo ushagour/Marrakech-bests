@@ -12,7 +12,7 @@ const IsAuthWrapper = ({ navigation }) => {
               <MaterialIcons name="lock-outline" size={48} color={colors.primary1} />
               <Text style={styles.authPromptTitle}>{t('Sign in Required')}</Text>
               <Text style={styles.authPromptText}>
-                {t('Please sign in or create an account to add items to your cart')}
+                {t('Sign in or create an account to access your profile.')}
               </Text>
               <View style={styles.authButtonsContainer}>
                 <AppButton 

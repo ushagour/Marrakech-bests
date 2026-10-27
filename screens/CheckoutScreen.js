@@ -29,7 +29,7 @@ const isTablet = width >= 768;
 const CheckoutScreen = ({ navigation }) => {
   const { cartItems, subtotal, tax, total, removeFromCart, updateQuantity, clearCart } = useCart();
   const { addOrder } = useOrders();
-  const { isGuest } = useAuth();
+  const { user } = useAuth();
   const { showToast } = useFeedback();
   const { t, isRTL } = useLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -52,10 +52,13 @@ const CheckoutScreen = ({ navigation }) => {
   };
 
   const handlePlaceOrder = async () => {
-    // Check if user is guest - prevent checkout
-    if (isGuest) {
-      showToast(t('Register to place an order.'), {
-        action: { label: t('Register'), onPress: () => navigation.navigate('Register') },
+    const isAuthenticated = Boolean(user && !user.isGuest && user.isUserOnboarded);
+    if (!isAuthenticated) {
+      showToast(t('Sign in to place an order.'), {
+        action: {
+          label: t('Sign in'),
+          onPress: () => navigation.navigate('Login', { returnTo: 'Checkout' }),
+        },
       });
       return;
     }

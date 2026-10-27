@@ -8,11 +8,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/Logo-splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -21,7 +16,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#245642"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.ushagour.marrakechbites"
     },
     "web": {
@@ -40,9 +34,17 @@
         }
       ],
       "expo-sqlite",
-      "expo-image"
+      "expo-image",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/Logo-splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
     ],
-    "jsEngine": "hermes",
     "extra": {
       "eas": {
         "projectId": "d4310f1e-9998-4d09-a00e-832e63b31c26"

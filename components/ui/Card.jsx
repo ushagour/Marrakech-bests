@@ -8,9 +8,8 @@ import { colors, layout, radii, shadows, spacing, typography } from '../../confi
 import { getImageUrl } from '../../api/getImageUrl';
 import { formatPriceMAD } from '../../utils/currency';
 import { useCart } from '../../hooks/useCart';
-import { useAuth } from '../../hooks/useAuth';
 import { useFeedback } from '../../context/FeedbackContext';
-import { hapticSuccess, hapticWarning } from '../../utils/haptics';
+import { hapticSuccess } from '../../utils/haptics';
 import { Skeleton } from './Skeleton';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -19,7 +18,6 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const Card = React.memo(({ item, index = 0 }) => {
   const navigation = useNavigation();
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const { showToast, showAddedToCart } = useFeedback();
   const { t } = useLanguage();
   const [loaded, setLoaded] = useState(false);
@@ -30,18 +28,9 @@ const Card = React.memo(({ item, index = 0 }) => {
   const addStyle = useAnimatedStyle(() => ({ transform: [{ scale: addScale.value }] }));
 
   const unavailable = item.available === false;
-  const canOrder = Boolean(user && !user.isGuest && user.isUserOnboarded);
 
   const handleQuickAdd = async () => {
     if (unavailable) return;
-    if (!canOrder) {
-      hapticWarning();
-      showToast(t('Sign in to add items to your cart.'), {
-        type: 'info',
-        action: { label: t('Sign in'), onPress: () => navigation.navigate('Login') },
-      });
-      return;
-    }
     addScale.value = withSpring(0.8, { damping: 6 }, () => {
       addScale.value = withSpring(1);
     });

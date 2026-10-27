@@ -72,7 +72,7 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
-  const { isUserOnboarded, isLoading } = useAuth();
+  const { isUserOnboarded, hasSeenOnboarding, isLoading } = useAuth();
 
   if (isLoading) {
     return <SplashScreen />;
@@ -81,7 +81,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
-        initialRouteName={isUserOnboarded ? 'Main' : 'Onboarding'}
+        initialRouteName={isUserOnboarded || hasSeenOnboarding ? 'Main' : 'Onboarding'}
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="Onboarding" component={OnboardingScreen} />

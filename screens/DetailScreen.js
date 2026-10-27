@@ -12,8 +12,6 @@ import colors from '../config/colors';
 import { getImageUrl } from '../api/getImageUrl';
 import AppButton from '../components/Forms/AppButton';
 import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
-import IsAuthWrapper from '../components/ui/IsAuthWrapper';
 import { formatPriceMAD } from '../utils/currency';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -68,7 +66,6 @@ const Section = ({ title, children }) => (
 
 const DetailScreen = ({ navigation, route }) => {
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const { showToast, showAddedToCart } = useFeedback();
   const { t } = useLanguage();
   const [imageLoading, setImageLoading] = useState(true);
@@ -125,7 +122,6 @@ const DetailScreen = ({ navigation, route }) => {
   const validUrl = heroUrl && (heroUrl.startsWith('http://') || heroUrl.startsWith('https://'));
   const showImage = validUrl && !imageError;
 
-  const isAuthenticated = user && !user.isGuest && user.isUserOnboarded;
   const unavailable = item?.available === false;
 
   const toggleExtra = (extra) => {
@@ -156,7 +152,7 @@ const DetailScreen = ({ navigation, route }) => {
       <ScreenHeader title={item?.name ?? t('Menu item')} onBack={() => navigation.goBack()} />
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, isAuthenticated && { paddingBottom: 120 }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: 120 }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero */}
@@ -312,77 +308,69 @@ const DetailScreen = ({ navigation, route }) => {
         )}
 
         {/* Customise */}
-        {!isAuthenticated ? (
-          <View style={{ marginTop: 20 }}>
-            <IsAuthWrapper navigation={navigation} />
+        <Section title={t('Customize your order')}>
+          <View style={styles.card}>
+            {extrasOptions.map((extra, index) => {
+              const checked = selectedExtras.some((e) => e.id === extra.id);
+              return (
+                <TouchableOpacity
+                  key={extra.id}
+                  activeOpacity={0.7}
+                  onPress={() => toggleExtra(extra)}
+                  style={[styles.extraRow, index > 0 && styles.rowDividerTop]}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked }}
+                >
+                  <View style={[styles.checkbox, checked && styles.checkboxOn]}>
+                    {checked && <MaterialIcons name="check" size={16} color="#FFF" />}
+                  </View>
+                  <Text style={styles.extraLabel}>{extra.label}</Text>
+                  <Text style={styles.extraPrice}>+ {formatPriceMAD(extra.price)}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-        ) : (
-          <Section title={t('Customize your order')}>
-            <View style={styles.card}>
-              {extrasOptions.map((extra, index) => {
-                const checked = selectedExtras.some((e) => e.id === extra.id);
-                return (
-                  <TouchableOpacity
-                    key={extra.id}
-                    activeOpacity={0.7}
-                    onPress={() => toggleExtra(extra)}
-                    style={[styles.extraRow, index > 0 && styles.rowDividerTop]}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked }}
-                  >
-                    <View style={[styles.checkbox, checked && styles.checkboxOn]}>
-                      {checked && <MaterialIcons name="check" size={16} color="#FFF" />}
-                    </View>
-                    <Text style={styles.extraLabel}>{extra.label}</Text>
-                    <Text style={styles.extraPrice}>+ {formatPriceMAD(extra.price)}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </Section>
-        )}
+        </Section>
       </ScrollView>
 
       {/* Sticky bottom bar */}
-      {isAuthenticated && (
-        <View style={styles.bottomBar}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>
-              {t('TOTAL')}
-              {selectedExtras.length > 0 ? `  ·  ${selectedExtras.length} extra` : ''}
-            </Text>
-            <Text style={styles.summaryTotal}>{formatPriceMAD(TOTAL)}</Text>
+      <View style={styles.bottomBar}>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>
+            {t('TOTAL')}
+            {selectedExtras.length > 0 ? `  ·  ${selectedExtras.length} extra` : ''}
+          </Text>
+          <Text style={styles.summaryTotal}>{formatPriceMAD(TOTAL)}</Text>
+        </View>
+        <View style={styles.actionRow}>
+          <View style={styles.stepper}>
+            <TouchableOpacity
+              onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              style={styles.stepperBtn}
+              accessibilityLabel={t('Decrease quantity')}
+            >
+              <MaterialIcons name="remove" size={20} color={colors.primary1} />
+            </TouchableOpacity>
+            <Text style={styles.stepperValue}>{quantity}</Text>
+            <TouchableOpacity
+              onPress={() => setQuantity(quantity + 1)}
+              style={styles.stepperBtn}
+              accessibilityLabel={t('Increase quantity')}
+            >
+              <MaterialIcons name="add" size={20} color={colors.primary1} />
+            </TouchableOpacity>
           </View>
-          <View style={styles.actionRow}>
-            <View style={styles.stepper}>
-              <TouchableOpacity
-                onPress={() => setQuantity(Math.max(1, quantity - 1))}
-                style={styles.stepperBtn}
-                accessibilityLabel={t('Decrease quantity')}
-              >
-                <MaterialIcons name="remove" size={20} color={colors.primary1} />
-              </TouchableOpacity>
-              <Text style={styles.stepperValue}>{quantity}</Text>
-              <TouchableOpacity
-                onPress={() => setQuantity(quantity + 1)}
-                style={styles.stepperBtn}
-                accessibilityLabel={t('Increase quantity')}
-              >
-                <MaterialIcons name="add" size={20} color={colors.primary1} />
-              </TouchableOpacity>
-            </View>
-            <View style={{ flex: 1 }}>
-              <AppButton
-                title={isAdding ? t('Adding to Cart...') : t('Add to Cart')}
-                color="primary2"
-                buttonStyle={{ width: '100%', alignItems: 'center', fontFamily: 'Karla-Bold' }}
-                disabled={isAdding || unavailable}
-                onPress={handleAdd}
-              />
-            </View>
+          <View style={{ flex: 1 }}>
+            <AppButton
+              title={isAdding ? t('Adding to Cart...') : t('Add to Cart')}
+              color="primary2"
+              buttonStyle={{ width: '100%', alignItems: 'center', fontFamily: 'Karla-Bold' }}
+              disabled={isAdding || unavailable}
+              onPress={handleAdd}
+            />
           </View>
         </View>
-      )}
+      </View>
     </View>
   );
 };

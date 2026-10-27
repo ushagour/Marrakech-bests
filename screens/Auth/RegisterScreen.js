@@ -11,7 +11,7 @@ import { useLanguage } from '../../context/LanguageContext';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NAME_RE = /^[\p{L}\s]+$/u;
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = ({ navigation, route }) => {
   const { completeOnboarding } = useAuth();
   const { showToast } = useFeedback();
   const { t } = useLanguage();
@@ -49,7 +49,11 @@ const RegisterScreen = ({ navigation }) => {
         email: form.email,
       });
       if (success) {
-        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+        const routes = [{ name: 'Main' }];
+        if (route?.params?.returnTo === 'Checkout') {
+          routes.push({ name: 'Checkout' });
+        }
+        navigation.reset({ index: routes.length - 1, routes });
       } else {
         showToast(t('Failed to register. Please try again.'), { type: 'error' });
       }
@@ -124,8 +128,16 @@ const RegisterScreen = ({ navigation }) => {
       <AppButton variant="primary" title={t('Sign up')} onPress={handleRegister} loading={submitting} />
 
       <View style={styles.secondary}>
-        <AppButton variant="secondary" title={t('I already have an account')} onPress={() => navigation.navigate('Login')} />
-        <AppButton variant="text" title={t('Continue as guest')} onPress={() => navigation.navigate('Onboarding')} />
+        <AppButton
+          variant="secondary"
+          title={t('I already have an account')}
+          onPress={() => navigation.navigate('Login', { returnTo: route?.params?.returnTo })}
+        />
+        <AppButton
+          variant="text"
+          title={t('Back to menu')}
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+        />
       </View>
     </AuthLayout>
   );

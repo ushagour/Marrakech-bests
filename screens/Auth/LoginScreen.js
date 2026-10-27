@@ -10,7 +10,7 @@ import { useLanguage } from '../../context/LanguageContext';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation, route }) => {
   const { login } = useAuth();
   const { showToast } = useFeedback();
   const { t } = useLanguage();
@@ -34,7 +34,11 @@ const LoginScreen = ({ navigation }) => {
     try {
       const success = await login({ email, password });
       if (success) {
-        navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+        const routes = [{ name: 'Main' }];
+        if (route?.params?.returnTo === 'Checkout') {
+          routes.push({ name: 'Checkout' });
+        }
+        navigation.reset({ index: routes.length - 1, routes });
       } else {
         showToast(t('Failed to log in. Please try again.'), { type: 'error' });
       }
@@ -77,8 +81,16 @@ const LoginScreen = ({ navigation }) => {
       <AppButton variant="primary" title={t('Log in')} onPress={handleLogin} loading={submitting} />
 
       <View style={styles.secondary}>
-        <AppButton variant="secondary" title={t('Create account')} onPress={() => navigation.navigate('Register')} />
-        <AppButton variant="text" title={t('Continue as guest')} onPress={() => navigation.navigate('Onboarding')} />
+        <AppButton
+          variant="secondary"
+          title={t('Create account')}
+          onPress={() => navigation.navigate('Register', { returnTo: route?.params?.returnTo })}
+        />
+        <AppButton
+          variant="text"
+          title={t('Back to menu')}
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+        />
       </View>
     </AuthLayout>
   );

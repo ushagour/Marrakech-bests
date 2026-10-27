@@ -55,7 +55,7 @@ const fromUser = (user) => ({
 });
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, updateUser, logout, isGuest } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const { showToast } = useFeedback();
   const { t } = useLanguage();
   const db = useSQLiteContext();
@@ -154,7 +154,9 @@ const ProfileScreen = ({ navigation }) => {
     }
   };
 
-  if (isGuest) {
+  const isAuthenticated = Boolean(user && !user.isGuest && user.isUserOnboarded);
+
+  if (!isAuthenticated) {
     return (
       <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
         <Text style={[styles.title, styles.pad]}>{t('Profile')}</Text>
